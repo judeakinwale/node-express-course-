@@ -5,6 +5,7 @@ const {products, people} = require('./data')
 const app = express()
 
 // // get static files
+// // will also use the index.html in the public folder as the home page
 // app.use(express.static('./public'))
 
 app.get('/', (req, res) => {
@@ -40,7 +41,30 @@ app.get('/api/products/:productId/reviews/:reviewId', (req, res) => {
 
 app.get('/api/v1/query', (req, res) => {
     console.log(req.query)
-    return res.send("hello world")
+    const {search, limit} = req.query
+    let sortedProducts = [...products]
+
+    if (search) {
+        sortedProducts = sortedProducts.filter((products) => {
+            return products.name.startsWith(search)
+        })
+    }
+
+    if (limit) {
+        sortedProducts = sortedProducts.slice(0, Number(limit))
+    }
+
+    // if there are no products matching the search
+    if (sortedProducts.length < 1) {
+        // return res.status(200).send('No products matched your search')
+        return res.status(200).json({
+            sucess: true,
+            data: [],   
+        })
+    } 
+
+    return res.status(200).json(sortedProducts)
+    // return res.send("hello world")
 })
 
 app.listen(5000, () => {
